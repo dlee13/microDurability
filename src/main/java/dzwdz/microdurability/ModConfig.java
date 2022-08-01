@@ -6,6 +6,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @Config(name = "microdurability")
 public class ModConfig implements ConfigData {
+
     @ConfigEntry.Gui.PrefixText
     boolean requireMending = true;
     int minDurability = 100;

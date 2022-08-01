@@ -8,24 +8,24 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
 
 public class EntryPoint implements ClientModInitializer {
-    public static ModConfig config;
-    public static Renderer renderer;
+
+    public static ModConfig CONFIG;
 
     @Override
     public void onInitializeClient() {
-        renderer = new Renderer();
-
         AutoConfig.register(ModConfig.class, JanksonConfigSerializer::new);
-        config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
+        CONFIG = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
+
+        DurabilityRenderer.EVENT.register(new DurabilityRenderer());
     }
 
     public static boolean shouldWarn(ItemStack stack) {
         if (stack == null || !stack.isDamageable())
             return false;
-        if (config.requireMending && EnchantmentHelper.getLevel(Enchantments.MENDING, stack) <= 0)
+        if (CONFIG.requireMending && EnchantmentHelper.getLevel(Enchantments.MENDING, stack) <= 0)
             return false;
         int durability = stack.getMaxDamage() - stack.getDamage();
-        return durability < config.minDurability
-                && durability * 100f / config.minPercent < stack.getMaxDamage();
+        return durability < CONFIG.minDurability
+                && durability * 100f / CONFIG.minPercent < stack.getMaxDamage();
     }
 }
