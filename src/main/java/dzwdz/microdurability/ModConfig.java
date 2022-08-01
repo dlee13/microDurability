@@ -8,12 +8,9 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.PrefixText
     boolean requireMending = true;
-
     int minDurability = 100;
     float minPercent = 10;
-
     float blinkTime = 1f;
     boolean toolWarning = true;
-
     boolean undamagedBars = true;
 }
