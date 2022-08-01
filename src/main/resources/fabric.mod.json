@@ -15,7 +15,7 @@
   "icon": "assets/microdurability/icon.png",
   "environment": "client",
   "entrypoints": {
-    "main": [
+    "client": [
       "dzwdz.microdurability.EntryPoint"
     ],
     "modmenu": [
