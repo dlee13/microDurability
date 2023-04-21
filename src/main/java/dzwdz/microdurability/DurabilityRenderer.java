@@ -3,7 +3,6 @@ package dzwdz.microdurability;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -12,13 +11,11 @@ public class DurabilityRenderer extends DrawableHelper implements HudRenderCallb
 
     private static final Identifier TEX = new Identifier("microdurability", "textures/gui/icons.png");
     private final MinecraftClient client;
-    private final ItemRenderer itemRenderer;
 
     private float time = 0;
 
     public DurabilityRenderer() {
         client = MinecraftClient.getInstance();
-        itemRenderer = client.getItemRenderer();
     }
 
     @Override
@@ -45,7 +42,7 @@ public class DurabilityRenderer extends DrawableHelper implements HudRenderCallb
 
         // render the armor durability
         int x = scaledWidth / 2 - 7;
-        int y = scaledHeight - 30;
+        int y = scaledHeight - 43;
         if (client.player.experienceLevel > 0)
             y -= 6;
         if (EntryPoint.CONFIG.blinkTime > 0)
@@ -54,7 +51,7 @@ public class DurabilityRenderer extends DrawableHelper implements HudRenderCallb
                     return;
 
         for (ItemStack stack : client.player.getArmorItems()) {
-            itemRenderer.renderGuiItemOverlay(client.textRenderer, stack, x, y -= 3);
+            client.getItemRenderer().renderGuiItemOverlay(matrixStack, client.textRenderer, stack, x, y -= 3);
         }
     }
 }
