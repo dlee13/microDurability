@@ -2,14 +2,16 @@ package dzwdz.microdurability;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper.Argb;
 
-public class DurabilityRenderer extends DrawableHelper implements HudRenderCallback {
+public class DurabilityRenderer implements HudRenderCallback {
 
     private static final Identifier TEX = new Identifier("microdurability", "textures/gui/icons.png");
+    private static final int MASK = Argb.getArgb(0xFF, 0x00, 0x00, 0x00);
     private final MinecraftClient client;
 
     private float time = 0;
@@ -19,39 +21,49 @@ public class DurabilityRenderer extends DrawableHelper implements HudRenderCallb
     }
 
     @Override
-    public void onHudRender(MatrixStack matrixStack, float tickDelta) {
+    public void onHudRender(DrawContext drawContext, float tickDelta) {
         if (!client.interactionManager.hasStatusBars())
             return;
 
-        int scaledWidth = client.getWindow().getScaledWidth();
-        int scaledHeight = client.getWindow().getScaledHeight();
+        final int scaledWidth = client.getWindow().getScaledWidth();
+        final int scaledHeight = client.getWindow().getScaledHeight();
         time = (time + tickDelta) % (EntryPoint.CONFIG.blinkTime * 40f);
 
         // render the held item warning
         if (EntryPoint.CONFIG.toolWarning) {
             for (ItemStack stack : client.player.getHandItems()) {
                 if (EntryPoint.shouldWarn(stack)) {
-                    client.getTextureManager().bindTexture(TEX);
                     // todo: this doesn't align with the crosshair at some resolutions
-                    drawTexture(matrixStack, scaledWidth / 2 - 2, scaledHeight / 2 - 18, 0, 0, 3, 11);
-                    client.getTextureManager().bindTexture(GUI_ICONS_TEXTURE);
+                    drawContext.drawTexture(TEX, scaledWidth / 2 - 2, scaledHeight / 2 - 18, 0, 0, 3, 11);
                     break;
                 }
             }
         }
 
         // render the armor durability
-        int x = scaledWidth / 2 - 7;
-        int y = scaledHeight - 43;
-        if (client.player.experienceLevel > 0)
-            y -= 6;
-        if (EntryPoint.CONFIG.blinkTime > 0)
-            for (ItemStack stack : client.player.getArmorItems())
-                if (time < EntryPoint.CONFIG.blinkTime * 20f && EntryPoint.shouldWarn(stack))
+        if (EntryPoint.CONFIG.blinkTime > 0) {
+            for (ItemStack stack : client.player.getArmorItems()) {
+                if (time < EntryPoint.CONFIG.blinkTime * 20f && EntryPoint.shouldWarn(stack)) {
                     return;
+                }
+            }
+        }
+
+        int x = (scaledWidth / 2) - 7;
+        int y = scaledHeight - (client.player.experienceLevel > 0 ? 36 : 30);
 
         for (ItemStack stack : client.player.getArmorItems()) {
-            client.getItemRenderer().renderGuiItemOverlay(matrixStack, client.textRenderer, stack, x, y -= 3);
+            drawItemBar(drawContext, stack, x, y -= 3);
         }
+    }
+
+    private static void drawItemBar(DrawContext drawContext, ItemStack stack, int x, int y) {
+        if (stack == null || !stack.isItemBarVisible()) {
+            return;
+        }
+        final int width = stack.getItemBarStep();
+        final int color = stack.getItemBarColor();
+        drawContext.fill(RenderLayer.getGuiOverlay(), x, y, x + 13, y + 2, MASK);
+        drawContext.fill(RenderLayer.getGuiOverlay(), x, y, x + width, y + 1, color | MASK);
     }
 }
